@@ -4,7 +4,7 @@
  */
 
 function loadWidget(config) {
-	let { waifuPath, apiPath, cdnPath } = config;
+	let { waifuPath, modelListPath, apiPath, cdnPath } = config;
 	let useCDN = false, modelList;
 	if (typeof cdnPath === "string") {
 		useCDN = true;
@@ -32,7 +32,8 @@ function loadWidget(config) {
 		</div>`);
 	// https://stackoverflow.com/questions/24148403/trigger-css-transition-on-appended-element
 	setTimeout(() => {
-		document.getElementById("waifu").style.bottom = 0;
+		var panel = document.getElementById("waifu");
+		panel.style.bottom = 0;
 	}, 0);
 
 	function randomSelection(obj) {
@@ -42,7 +43,7 @@ function loadWidget(config) {
 	let userAction = false,
 		userActionTimer,
 		messageTimer,
-		messageArray = ["好久不见，日子过得好快呢……", "大坏蛋！你都多久没理人家了呀，嘤嘤嘤～", "嗨～快来逗我玩吧！", "拿小拳拳锤你胸口！", "记得把小家加入 Adblock 白名单哦！"];
+		messageArray = ["好久不见，日子过得好快呢……", "大坏蛋！你都多久没理人家了呀，嘤嘤嘤～", "嗨～快来逗我玩吧！", "拿小拳拳锤你胸口！"];
 	window.addEventListener("mousemove", () => userAction = true);
 	window.addEventListener("keydown", () => userAction = true);
 	setInterval(() => {
@@ -88,7 +89,7 @@ function loadWidget(config) {
 				document.getElementById("waifu-toggle").classList.add("waifu-toggle-active");
 			}, 3000);
 		});
-		const devtools = () => {};
+		const devtools = () => { };
 		console.log("%c", devtools);
 		devtools.toString = () => {
 			showMessage("哈哈，你打开了控制台，是想要看看我的小秘密吗？", 6000, 9);
@@ -162,10 +163,11 @@ function loadWidget(config) {
 			modelTexturesId = localStorage.getItem("modelTexturesId");
 		if (modelId === null) {
 			// 首次访问加载 指定模型 的 指定材质
-			modelId = 1; // 模型 ID
-			modelTexturesId = 53; // 材质 ID
+			modelId = modelList.defaultModelInfo[0]; // 模型 ID
+			modelTexturesId = modelList.defaultModelInfo[1]; // 材质 ID
+			loadModel(modelId, modelTexturesId, modelList.defaultModelInfo[2]);
 		}
-		loadModel(modelId, modelTexturesId);
+		else loadModel(modelId, modelTexturesId);
 		fetch(waifuPath)
 			.then(response => response.json())
 			.then(result => {
@@ -202,18 +204,21 @@ function loadWidget(config) {
 	})();
 
 	async function loadModelList() {
-		const response = await fetch(`${cdnPath}model_list.json`);
+		const response = await fetch(modelListPath == null ? `${cdnPath}model_list.json` : modelListPath);
 		modelList = await response.json();
 	}
 
-	async function loadModel(modelId, modelTexturesId, message) {
+	async function loadModel(modelId, modelTexturesId, message, modelName = null) {
 		localStorage.setItem("modelId", modelId);
 		localStorage.setItem("modelTexturesId", modelTexturesId);
 		showMessage(message, 4000, 10);
 		if (useCDN) {
 			if (!modelList) await loadModelList();
 			const target = randomSelection(modelList.models[modelId]);
-			loadlive2d("live2d", `${cdnPath}model/${target}/index.json`);
+			// loadlive2d("live2d", `/live2D/sat8_2601/index.json`);
+			loadlive2d("live2d", `${cdnPath}model/${modelName == null ? target : modelName}/index.json`);
+			//若该角色列表仅有一个，则直接隐藏换装按钮
+			document.querySelector("#waifu-tool .fa-street-view").style.display = haveMultiObject(modelList.models[modelId]) ? "block" : "none";
 		} else {
 			loadlive2d("live2d", `${apiPath}get/?id=${modelId}-${modelTexturesId}`);
 			console.log(`Live2D 模型 ${modelId}-${modelTexturesId} 加载完成`);
@@ -225,9 +230,16 @@ function loadWidget(config) {
 			modelTexturesId = localStorage.getItem("modelTexturesId");
 		if (useCDN) {
 			if (!modelList) await loadModelList();
-			const target = randomSelection(modelList.models[modelId]);
-			loadlive2d("live2d", `${cdnPath}model/${target}/index.json`);
-			showMessage("我的新衣服好看嘛？", 4000, 10);
+			//模型列表如果有超出两个对象，保存路径，避免反复随机到同一模型
+			if (modelList.models[modelId].length > 1 && typeof (modelList.models[modelId]) != "string") {
+				var target = randomSelection(modelList.models[modelId]);
+				var mName = localStorage.getItem("modelName");
+				while (target == mName)
+					target = randomSelection(modelList.models[modelId]);
+				localStorage.setItem("modelName", target);
+				loadlive2d("live2d", `${cdnPath}model/${target}/index.json`);
+				showMessage("我的新衣服好看嘛？", 4000, 10);
+			} else showMessage("我还没有其他衣服呢！", 4000, 10);
 		} else {
 			// 可选 "rand"(随机), "switch"(顺序)
 			fetch(`${apiPath}rand_textures/?id=${modelId}-${modelTexturesId}`)
@@ -252,6 +264,11 @@ function loadWidget(config) {
 					loadModel(result.model.id, 0, result.model.message);
 				});
 		}
+	}
+
+	//检查列表是否有超过一个对象（除字符串）
+	function haveMultiObject(list) {
+		return list.length > 1 && typeof (list) != "string";
 	}
 }
 
