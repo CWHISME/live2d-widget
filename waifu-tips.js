@@ -215,8 +215,8 @@ function loadWidget(config) {
 		if (useCDN) {
 			if (!modelList) await loadModelList();
 			const target = randomSelection(modelList.models[modelId]);
-			// loadlive2d("live2d", `/live2D/sat8_2601/index.json`);
-			loadlive2d("live2d", `${cdnPath}model/${modelName == null ? target : modelName}/index.json`);
+			//loadlive2d("live2d", `/live2D/Sagiri/index.json`);
+			 loadlive2d("live2d", `${cdnPath}model/${modelName == null ? target : modelName}/index.json`);
 			//若该角色列表仅有一个，则直接隐藏换装按钮
 			document.querySelector("#waifu-tool .fa-street-view").style.display = haveMultiObject(modelList.models[modelId]) ? "block" : "none";
 		} else {
@@ -231,7 +231,7 @@ function loadWidget(config) {
 		if (useCDN) {
 			if (!modelList) await loadModelList();
 			//模型列表如果有超出两个对象，保存路径，避免反复随机到同一模型
-			if (modelList.models[modelId].length > 1 && typeof (modelList.models[modelId]) != "string") {
+			if (haveMultiObject(modelList.models[modelId])) {
 				var target = randomSelection(modelList.models[modelId]);
 				var mName = localStorage.getItem("modelName");
 				while (target == mName)
