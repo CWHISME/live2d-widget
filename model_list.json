@@ -4,9 +4,13 @@
         53,
         "HyperdimensionNeptunia/blanc_swimwear"
     ],
+    "sizeZoomList": [
+        300,400,500,600,700,800,900,1000
+    ],
     "models": [
         [
-            "HyperdimensionNeptunia/blanc_swimwear"
+            "HyperdimensionNeptunia/blanc_swimwear",
+            "HyperdimensionNeptunia/blanc_normal"
         ],
         [
             "GirlsFrontline/hk416_3401",

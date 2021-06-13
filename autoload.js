@@ -33,7 +33,7 @@ if (screen.width >= 768) {
 	]).then(() => {
 		initWidget({
 			waifuPath: live2d_path + "waifu-tips.json",
-			//模型列表配置路径
+			//模型列表配置路径，如果不配置则默认为 cdnPath 路径下同名文件
 			modelListPath: live2d_path + "model_list.json",
 			//apiPath: "https://live2d.fghrsh.net/api/",
 			//live2d模型仓库地址

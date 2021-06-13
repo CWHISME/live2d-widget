@@ -19,13 +19,14 @@ function loadWidget(config) {
 	sessionStorage.removeItem("waifu-text");
 	document.body.insertAdjacentHTML("beforeend", `<div id="waifu">
 			<div id="waifu-tips"></div>
-			<canvas id="live2d" width="800" height="800"></canvas>
+			<canvas id="live2d" width="1024" height="1024"></canvas>
 			<div id="waifu-tool">
 				<span class="fa fa-lg fa-comment"></span>
 				<span class="fa fa-lg fa-paper-plane"></span>
 				<span class="fa fa-lg fa-user-circle"></span>
 				<span class="fa fa-lg fa-street-view"></span>
 				<span class="fa fa-lg fa-camera-retro"></span>
+				<span class="fa fa-lg fa-heart-o"></span>
 				<span class="fa fa-lg fa-info-circle"></span>
 				<span class="fa fa-lg fa-times"></span>
 			</div>
@@ -77,8 +78,11 @@ function loadWidget(config) {
 			Live2D.captureName = "photo.png";
 			Live2D.captureFrame = true;
 		});
+		//放大缩小按钮
+		document.querySelector("#waifu-tool .fa-heart-o").addEventListener("click", zoomModelSize);
+
 		document.querySelector("#waifu-tool .fa-info-circle").addEventListener("click", () => {
-			open("https://github.com/stevenjoezhang/live2d-widget");
+			open("https://cwhisme.ml/about/");
 		});
 		document.querySelector("#waifu-tool .fa-times").addEventListener("click", () => {
 			localStorage.setItem("waifu-display", Date.now());
@@ -162,12 +166,10 @@ function loadWidget(config) {
 		let modelId = localStorage.getItem("modelId"),
 			modelTexturesId = localStorage.getItem("modelTexturesId");
 		if (modelId === null) {
-			// 首次访问加载 指定模型 的 指定材质
-			modelId = modelList.defaultModelInfo[0]; // 模型 ID
-			modelTexturesId = modelList.defaultModelInfo[1]; // 材质 ID
-			loadModel(modelId, modelTexturesId, modelList.defaultModelInfo[2]);
+			firstLoadModel();
 		}
 		else loadModel(modelId, modelTexturesId);
+		zoomModelSize();
 		fetch(waifuPath)
 			.then(response => response.json())
 			.then(result => {
@@ -208,6 +210,14 @@ function loadWidget(config) {
 		modelList = await response.json();
 	}
 
+	async function firstLoadModel() {
+		// 首次访问加载 指定模型 的 指定材质
+		if (!modelList) await loadModelList();
+		modelId = modelList.defaultModelInfo[0]; // 模型 ID
+		modelTexturesId = modelList.defaultModelInfo[1]; // 材质 ID
+		loadModel(modelId, modelTexturesId, modelList.defaultModelInfo[2]);
+	}
+
 	async function loadModel(modelId, modelTexturesId, message, modelName = null) {
 		localStorage.setItem("modelId", modelId);
 		localStorage.setItem("modelTexturesId", modelTexturesId);
@@ -216,7 +226,7 @@ function loadWidget(config) {
 			if (!modelList) await loadModelList();
 			const target = randomSelection(modelList.models[modelId]);
 			//loadlive2d("live2d", `/live2D/Sagiri/index.json`);
-			 loadlive2d("live2d", `${cdnPath}model/${modelName == null ? target : modelName}/index.json`);
+			loadlive2d("live2d", `${cdnPath}model/${modelName == null ? target : modelName}/index.json`);
 			//若该角色列表仅有一个，则直接隐藏换装按钮
 			document.querySelector("#waifu-tool .fa-street-view").style.display = haveMultiObject(modelList.models[modelId]) ? "block" : "none";
 		} else {
@@ -264,6 +274,27 @@ function loadWidget(config) {
 					loadModel(result.model.id, 0, result.model.message);
 				});
 		}
+	}
+
+	async function zoomModelSize(add = false) {
+		if (!modelList) await loadModelList();
+		var sizeZoomIndex = sessionStorage.getItem("sizeZoomIndex");
+		if (add) {
+			sizeZoomIndex++;
+			showMessage("好的啦 ~~~", 2000, 9);
+		}
+		if (sizeZoomIndex >= modelList.sizeZoomList.length)
+			sizeZoomIndex = 0;
+		var outBoundSize = modelList.sizeZoomList[sizeZoomIndex] + 35;
+		if (outBoundSize > window.innerHeight || outBoundSize > window.innerWidth) {
+			sizeZoomIndex = 0;
+			showMessage("你的浏览器界面太小了，再大一点可就装不下啦 ~", 5000, 9);
+		}
+		var size = modelList.sizeZoomList[sizeZoomIndex]
+		var panel = document.querySelector("#waifu #live2d");
+		panel.style.height = size + "px";
+		panel.style.width = size + "px";
+		sessionStorage.setItem("sizeZoomIndex", sizeZoomIndex);
 	}
 
 	//检查列表是否有超过一个对象（除字符串）
