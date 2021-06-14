@@ -1,12 +1,27 @@
 import os
 
-dirPath=r"F:/Hexo/HexoBlog/Hexo/source/live2D/"
+dirPath = r"F:/Hexo/live2dModels/Live2d-model/"
 
-paths=os.listdir(dirPath)
-for path in paths:
-    childPath= os.path.join(dirPath,path)
-    if os.path.isdir(childPath):
-        for file in os.listdir(childPath):
-            if file.endswith("model.json"):
-                print(file)
-                os.rename(os.path.join(childPath,file),os.path.join(childPath,"index.json"))
+
+def RenameDirFileNames(enterDirPath):
+    if(not os.path.isdir(enterDirPath)):
+        return
+    paths = os.listdir(enterDirPath)
+    for item in paths:
+        childPath = os.path.join(enterDirPath, item)
+        if os.path.isfile(childPath):
+            # for file in os.listdir(childPath):
+            if childPath.endswith("model.json"):
+                print(childPath)
+                try:
+                    os.rename(childPath, os.path.join(
+                        enterDirPath, "index.json"))
+                except:
+                    print("这个文件重命名失败！")
+        else:
+            RenameDirFileNames(childPath)
+
+
+# paths=os.listdir(dirPath)
+# for path in paths:
+RenameDirFileNames(dirPath)

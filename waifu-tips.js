@@ -225,7 +225,7 @@ function loadWidget(config) {
 		if (useCDN) {
 			if (!modelList) await loadModelList();
 			const target = randomSelection(modelList.models[modelId]);
-			//loadlive2d("live2d", `/live2D/Sagiri/index.json`);
+			// loadlive2d("live2d", `/@live2D@/`);
 			loadlive2d("live2d", `${cdnPath}model/${modelName == null ? target : modelName}/index.json`);
 			//若该角色列表仅有一个，则直接隐藏换装按钮
 			document.querySelector("#waifu-tool .fa-street-view").style.display = haveMultiObject(modelList.models[modelId]) ? "block" : "none";
@@ -247,7 +247,8 @@ function loadWidget(config) {
 				while (target == mName)
 					target = randomSelection(modelList.models[modelId]);
 				localStorage.setItem("modelName", target);
-				loadlive2d("live2d", `${cdnPath}model/${target}/index.json`);
+				showMessage("好的，我去换衣服去啦 ~", 4000, 10);
+				await loadlive2d("live2d", `${cdnPath}model/${target}/index.json`);
 				showMessage("我的新衣服好看嘛？", 4000, 10);
 			} else showMessage("我还没有其他衣服呢！", 4000, 10);
 		} else {
