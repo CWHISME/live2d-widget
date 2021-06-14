@@ -284,7 +284,7 @@ function loadWidget(config) {
 			sizeZoomIndex++;
 			showMessage("好的啦 ~~~", 2000, 9);
 		}
-		if (sizeZoomIndex >= modelList.sizeZoomList.length)
+		if (sizeZoomIndex >= modelList.sizeZoomList.length||!(typeof(sizeZoomIndex) == 'number' && !isNaN(sizeZoomIndex)))
 			sizeZoomIndex = 0;
 		var outBoundSize = modelList.sizeZoomList[sizeZoomIndex] + 35;
 		if (outBoundSize > window.innerHeight || outBoundSize > window.innerWidth) {
